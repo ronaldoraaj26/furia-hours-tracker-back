@@ -11,5 +11,7 @@ htmlcov/
 backend/media/
 backend/staticfiles/
 backend/.venv/
+.venv/
+venv/
 backend/db.sqlite3
 node_modules/

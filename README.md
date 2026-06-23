@@ -29,8 +29,9 @@ Além das tabelas do diagrama, foram adicionadas duas extensões para cobrir rec
 ## Estrutura
 
 ```bash
-furia-hours-backend/
+.
 ├── docker-compose.yml
+├── .env
 ├── .env.example
 ├── backend/
 │   ├── Dockerfile
@@ -39,6 +40,8 @@ furia-hours-backend/
 │   ├── requirements.txt
 │   ├── furia_backend/
 │   └── apps/
+├── .venv/
+└── README.md
 ```
 
 ## Como rodar
