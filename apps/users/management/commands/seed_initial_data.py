@@ -15,6 +15,7 @@ class Command(BaseCommand):
             ('manage_permissions', 'Gerenciar permissões'),
             ('manage_tokens', 'Visualizar tokens'),
             ('approve_time_entries', 'Aprovar registros de horas'),
+            ('manage_calendar_events', 'Gerenciar eventos do calendário'),
             ('view_audit_logs', 'Visualizar auditoria'),
         ]
         for name, description in permissions:
@@ -27,7 +28,7 @@ class Command(BaseCommand):
         for permission in Permission.objects.all():
             RolePermission.objects.get_or_create(role=admin_role, permission=permission)
 
-        for perm_name in ['approve_time_entries', 'view_audit_logs']:
+        for perm_name in ['approve_time_entries', 'manage_calendar_events', 'view_audit_logs']:
             permission = Permission.objects.get(name=perm_name)
             RolePermission.objects.get_or_create(role=director_role, permission=permission)
 

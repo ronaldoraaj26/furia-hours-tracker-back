@@ -1,55 +1,48 @@
-﻿from rest_framework import serializers
-from .models import CalendarEvent, Project, Category
+from rest_framework import serializers
+
+from .models import Approval, CalendarEvent, Category, FileAttachment, Project, TimeEntry, TimeEntryParticipant
 
 
 class CategorySerializer(serializers.ModelSerializer):
-    """
-    Serializer para categorias.
-    """
-
     class Meta:
         model = Category
         fields = [
             'id',
             'name',
+            'description',
+            'max_hours',
+            'academic_validation',
         ]
 
 
 class ProjectSerializer(serializers.ModelSerializer):
-    """
-    Serializer completo para projetos.
-    """
-
-    category = CategorySerializer(read_only=True)
+    created_by = serializers.PrimaryKeyRelatedField(read_only=True)
 
     class Meta:
         model = Project
         fields = [
             'id',
             'name',
-            'category',
+            'description',
+            'active',
+            'created_by',
         ]
 
 
 class ProjectCreateSerializer(serializers.ModelSerializer):
-    """
-    Serializer para criação/edição de projetos.
-    Recebe o ID da categoria.
-    """
-
     class Meta:
         model = Project
         fields = [
             'name',
-            'category',
+            'description',
+            'active',
         ]
+        extra_kwargs = {
+            'description': {'required': False, 'allow_blank': True},
+        }
 
 
 class ProjectForEventSerializer(serializers.ModelSerializer):
-    """
-    Serializer simplificado para exibir projeto dentro do evento.
-    """
-
     class Meta:
         model = Project
         fields = [
@@ -59,12 +52,18 @@ class ProjectForEventSerializer(serializers.ModelSerializer):
 
 
 class CalendarEventSerializer(serializers.ModelSerializer):
-    """
-    Serializer para leitura de eventos.
-    Retorna o projeto aninhado.
-    """
-
+    project_id = serializers.PrimaryKeyRelatedField(
+        source='project',
+        queryset=Project.objects.all(),
+        write_only=True,
+    )
     project = ProjectForEventSerializer(read_only=True)
+    created_by = serializers.PrimaryKeyRelatedField(read_only=True)
+    event_date = serializers.DateField(format='%Y-%m-%d', input_formats=['%Y-%m-%d'])
+    event_time = serializers.TimeField(
+        format='%H:%M:%S',
+        input_formats=['%H:%M', '%H:%M:%S'],
+    )
 
     class Meta:
         model = CalendarEvent
@@ -73,42 +72,98 @@ class CalendarEventSerializer(serializers.ModelSerializer):
             'title',
             'event_date',
             'event_time',
+            'project_id',
             'project',
             'description',
+            'created_by',
+            'created_at',
+            'updated_at',
         ]
 
 
-class CalendarEventCreateSerializer(serializers.ModelSerializer):
-    """
-    Serializer para criação/edição de eventos.
-    Recebe o ID do projeto.
-    """
-
+class TimeEntryWriteSerializer(serializers.ModelSerializer):
     class Meta:
-        model = CalendarEvent
+        model = TimeEntry
         fields = [
-            'title',
-            'event_date',
-            'event_time',
             'project',
+            'category',
+            'work_date',
+            'start_time',
+            'end_time',
+            'hours_worked',
             'description',
         ]
         extra_kwargs = {
-            'description': {
-                'required': False,
-                'allow_blank': True,
-            },
+            'description': {'required': False, 'allow_blank': True},
         }
 
 
-class ApprovalSerializer(serializers.Serializer):
-    """
-    Serializer para aprovar/reprovar eventos ou horas.
-    """
+class TimeEntrySerializer(serializers.ModelSerializer):
+    user = serializers.PrimaryKeyRelatedField(read_only=True)
+    project = ProjectForEventSerializer(read_only=True)
+    category = CategorySerializer(read_only=True)
 
-    approved = serializers.BooleanField(required=True)
-    observation = serializers.CharField(
-        required=False,
-        allow_blank=True,
-        allow_null=True,
-    )
+    class Meta:
+        model = TimeEntry
+        fields = [
+            'id',
+            'user',
+            'project',
+            'category',
+            'work_date',
+            'start_time',
+            'end_time',
+            'hours_worked',
+            'description',
+            'approved',
+            'created_at',
+            'updated_at',
+        ]
+
+
+class TimeEntryParticipantSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TimeEntryParticipant
+        fields = [
+            'id',
+            'time_entry',
+            'name',
+            'ra',
+            'participated_at',
+        ]
+
+
+class FileAttachmentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FileAttachment
+        fields = [
+            'id',
+            'time_entry',
+            'file_name',
+            'file_path',
+            'file_type',
+            'uploaded_at',
+            'file',
+        ]
+        read_only_fields = [
+            'file_name',
+            'file_path',
+            'file_type',
+            'uploaded_at',
+        ]
+
+
+class ApprovalSerializer(serializers.ModelSerializer):
+    approver = serializers.PrimaryKeyRelatedField(read_only=True)
+
+    class Meta:
+        model = Approval
+        fields = [
+            'id',
+            'time_entry',
+            'approver',
+            'status',
+            'approved_at',
+            'comments',
+        ]
+        read_only_fields = ['approved_at']
