@@ -11,7 +11,8 @@ class Project(UUIDPrimaryKeyModel):
     name = models.CharField(max_length=255)
     description = models.TextField(blank=True)
     active = models.BooleanField(default=True)
-    created_by = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL, related_name='created_projects')
+    created_by = models.ForeignKey(
+        User, null=True, blank=True, on_delete=models.SET_NULL, related_name='created_projects')
 
     class Meta:
         db_table = 'projects'
@@ -36,9 +37,12 @@ class Category(UUIDPrimaryKeyModel):
 
 
 class TimeEntry(UUIDPrimaryKeyModel, TimestampedModel):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='time_entries')
-    project = models.ForeignKey(Project, on_delete=models.PROTECT, related_name='time_entries')
-    category = models.ForeignKey(Category, on_delete=models.PROTECT, related_name='time_entries')
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name='time_entries')
+    project = models.ForeignKey(
+        Project, on_delete=models.PROTECT, related_name='time_entries')
+    category = models.ForeignKey(
+        Category, on_delete=models.PROTECT, related_name='time_entries')
     work_date = models.DateField()
     start_time = models.TimeField()
     end_time = models.TimeField()
@@ -52,7 +56,8 @@ class TimeEntry(UUIDPrimaryKeyModel, TimestampedModel):
 
     def clean(self):
         if self.end_time <= self.start_time:
-            raise ValidationError('O horário final deve ser maior que o inicial.')
+            raise ValidationError(
+                'O horário final deve ser maior que o inicial.')
         if self.hours_worked <= Decimal('0'):
             raise ValidationError('As horas devem ser maiores que zero.')
         if self.category and self.hours_worked > self.category.max_hours:
@@ -63,7 +68,8 @@ class TimeEntry(UUIDPrimaryKeyModel, TimestampedModel):
 
 
 class TimeEntryParticipant(UUIDPrimaryKeyModel):
-    time_entry = models.ForeignKey(TimeEntry, on_delete=models.CASCADE, related_name='participants')
+    time_entry = models.ForeignKey(
+        TimeEntry, on_delete=models.CASCADE, related_name='participants')
     name = models.CharField(max_length=255)
     ra = models.CharField(max_length=50)
     participated_at = models.DateTimeField()
@@ -86,9 +92,12 @@ class Approval(UUIDPrimaryKeyModel):
         (STATUS_REJECTED, 'Rejeitado'),
     ]
 
-    time_entry = models.ForeignKey(TimeEntry, on_delete=models.CASCADE, related_name='approvals')
-    approver = models.ForeignKey(User, on_delete=models.CASCADE, related_name='approvals_made')
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=STATUS_PENDING)
+    time_entry = models.ForeignKey(
+        TimeEntry, on_delete=models.CASCADE, related_name='approvals')
+    approver = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name='approvals_made')
+    status = models.CharField(
+        max_length=20, choices=STATUS_CHOICES, default=STATUS_PENDING)
     approved_at = models.DateTimeField(null=True, blank=True)
     comments = models.TextField(blank=True)
 
@@ -99,11 +108,13 @@ class Approval(UUIDPrimaryKeyModel):
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
         approved = self.status == self.STATUS_APPROVED
-        TimeEntry.objects.filter(pk=self.time_entry_id).update(approved=approved)
+        TimeEntry.objects.filter(
+            pk=self.time_entry_id).update(approved=approved)
 
 
 class FileAttachment(UUIDPrimaryKeyModel):
-    time_entry = models.ForeignKey(TimeEntry, on_delete=models.CASCADE, related_name='attachments')
+    time_entry = models.ForeignKey(
+        TimeEntry, on_delete=models.CASCADE, related_name='attachments')
     file_name = models.CharField(max_length=255)
     file_path = models.CharField(max_length=500)
     file_type = models.CharField(max_length=100)
@@ -118,7 +129,8 @@ class FileAttachment(UUIDPrimaryKeyModel):
         if self.file:
             self.file_name = self.file.name.split('/')[-1]
             self.file_path = self.file.name
-            self.file_type = getattr(self.file.file, 'content_type', self.file_type or '') if hasattr(self.file, 'file') else self.file_type
+            self.file_type = getattr(self.file.file, 'content_type', self.file_type or '') if hasattr(
+                self.file, 'file') else self.file_type
         super().save(*args, **kwargs)
         if self.file:
             self.file_path = self.file.name
@@ -126,12 +138,14 @@ class FileAttachment(UUIDPrimaryKeyModel):
 
 
 class CalendarEvent(UUIDPrimaryKeyModel, TimestampedModel):
-    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='calendar_events')
+    project = models.ForeignKey(
+        Project, on_delete=models.CASCADE, related_name='calendar_events')
     title = models.CharField(max_length=255)
     event_date = models.DateField()
     event_time = models.TimeField()
     description = models.TextField(blank=True)
-    created_by = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL, related_name='calendar_events')
+    created_by = models.ForeignKey(
+        User, null=True, blank=True, on_delete=models.SET_NULL, related_name='calendar_events')
 
     class Meta:
         db_table = 'calendar_events'

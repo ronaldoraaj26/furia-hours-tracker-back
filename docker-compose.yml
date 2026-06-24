@@ -1,4 +1,3 @@
-version: '3.9'
 services:
   db:
     image: mysql:8.4
@@ -13,7 +12,6 @@ services:
       - "3307:3306"
     volumes:
       - mysql_data:/var/lib/mysql
-    command: --default-authentication-plugin=mysql_native_password
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-p${MYSQL_ROOT_PASSWORD:-root123}"]
       interval: 10s
@@ -22,20 +20,21 @@ services:
 
   backend:
     build:
-      context: ./backend
+      context: .
+      dockerfile: Dockerfile
     container_name: furia_hours_backend
     restart: unless-stopped
     env_file:
-      - .env
+      - .env.docker
     volumes:
-      - ./backend:/app
+      - ./:/app
       - media_data:/app/media
     ports:
       - "8000:8000"
     depends_on:
       db:
         condition: service_healthy
-    command: ["/app/entrypoint.sh"]
+    command: ["sh", "/app/entrypoint.sh"]
 
 volumes:
   mysql_data:

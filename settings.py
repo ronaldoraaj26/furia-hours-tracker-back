@@ -4,7 +4,27 @@ import pymysql
 
 pymysql.install_as_MySQLdb()
 
-BASE_DIR = Path(__file__).resolve().parent.parent
+BASE_DIR = Path(__file__).resolve().parent
+
+
+def load_env_file(path: Path) -> None:
+    if not path.exists():
+        return
+
+    for raw_line in path.read_text(encoding='utf-8').splitlines():
+        line = raw_line.strip()
+        if not line or line.startswith('#') or '=' not in line:
+            continue
+
+        key, value = line.split('=', 1)
+        key = key.strip()
+        value = value.strip().strip('"').strip("'")
+        if key and key not in os.environ:
+            os.environ[key] = value
+
+
+load_env_file(BASE_DIR / '.env')
+load_env_file(BASE_DIR / '.env.local')
 
 SECRET_KEY = os.getenv('SECRET_KEY', 'unsafe-dev-secret-key')
 DEBUG = os.getenv('DEBUG', '1') == '1'
@@ -41,7 +61,7 @@ MIDDLEWARE = [
     'apps.audit.middleware.AuditLogMiddleware',
 ]
 
-ROOT_URLCONF = 'furia_backend.urls'
+ROOT_URLCONF = 'urls'
 
 TEMPLATES = [
     {
@@ -59,8 +79,8 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'furia_backend.wsgi.application'
-ASGI_APPLICATION = 'furia_backend.asgi.application'
+WSGI_APPLICATION = 'wsgi.application'
+ASGI_APPLICATION = 'asgi.application'
 
 DATABASES = {
     'default': {
@@ -108,5 +128,5 @@ REST_FRAMEWORK = {
         'rest_framework.filters.SearchFilter',
         'rest_framework.filters.OrderingFilter',
     ],
-    'DEFAULT_PAGINATION_CLASS': 'furia_backend.pagination.DefaultPagination',
+    'DEFAULT_PAGINATION_CLASS': 'pagination.DefaultPagination',
 }

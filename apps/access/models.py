@@ -11,7 +11,7 @@ from apps.users.models import Role, User
 
 class Token(UUIDPrimaryKeyModel):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='tokens')
-    token = models.TextField(unique=True)
+    token = models.CharField(max_length=255, unique=True)
     issued_at = models.DateTimeField(default=timezone.now)
     expires_at = models.DateTimeField()
     revoked = models.BooleanField(default=False)

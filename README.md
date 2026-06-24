@@ -33,13 +33,16 @@ Além das tabelas do diagrama, foram adicionadas duas extensões para cobrir rec
 ├── docker-compose.yml
 ├── .env
 ├── .env.example
-├── backend/
-│   ├── Dockerfile
-│   ├── entrypoint.sh
-│   ├── manage.py
-│   ├── requirements.txt
-│   ├── furia_backend/
-│   └── apps/
+├── Dockerfile
+├── entrypoint.sh
+├── manage.py
+├── requirements.txt
+├── asgi.py
+├── settings.py
+├── urls.py
+├── wsgi.py
+├── pagination.py
+├── apps/
 ├── .venv/
 └── README.md
 ```
@@ -76,6 +79,8 @@ docker compose exec backend python manage.py createsuperuser
 ```bash
 docker compose exec backend python manage.py seed_initial_data
 ```
+
+6. As modalidades usadas pelo front são criadas automaticamente pela migration de dados `apps.hours.0003_seed_projects`, então um `migrate` limpo já deixa `GET /api/projects/` com as oito opções esperadas.
 
 ## Endpoints principais
 

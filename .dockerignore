@@ -1,0 +1,15 @@
+.git
+.agents
+.venv
+venv
+__pycache__
+*.py[cod]
+*.sqlite3
+*.log
+.pytest_cache
+.mypy_cache
+htmlcov
+coverage
+node_modules
+media
+staticfiles
